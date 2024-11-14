@@ -9,14 +9,12 @@
                 <div class="card-body bg-white py-3">
                     <a href="/contacts/create" id="addContactButton" class="btn btn-success mb-3 float-start">Add Contact</a>
                     <div class="mb-3 float-end">
-                        <form>
-                            <input type="text" placeholder="Search" class="form-control" id="searchInput">
-                        </form>
+                             <input type="text" placeholder="Search" class="form-control" id="searchInput">
                     </div>
+
                     <table class="table table-hover" id="contactsTable">
                         <thead>
                             <tr>
-
                                 <th>Name</th>
                                 <th>Company</th>
                                 <th>Phone</th>
@@ -24,13 +22,12 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
+
                         <tbody id="contactsTableBody">
-                            <!-- Contacts will be populated here -->
                         </tbody>
                     </table>
-                    <!-- Pagination Controls -->
+                    <!-- pagination -->
                     <div id="paginationControls" class="text-center">
-                        <!-- Pagination buttons will go here -->
                     </div>
                 </div>
             </div>
@@ -38,7 +35,7 @@
     </div>
 </div>
 
-<!-- Modal for Deleting a Contact -->
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteContactModal" tabindex="-1" aria-labelledby="deleteContactModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -60,10 +57,9 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
     var userId = @json(Auth::id());
-    var currentPage = 1;  // Track the current page
-    var searchQuery = ''; // Variable to store search query
+    var currentPage = 1;  
+    var searchQuery = ''; 
 
-    // Fetch and display contacts on load
     fetchContacts(userId, currentPage, searchQuery);
 
     // Handle search input change
@@ -73,13 +69,12 @@
         fetchContacts(userId, currentPage, searchQuery); // Fetch contacts with search term
     });
 
-    // Function to fetch contacts from the API
+
     function fetchContacts(userId, page, query) {
         $.ajax({
             type: "GET",
-            url: `/api/contacts/${userId}?page=${page}&search=${query}`,  // Include page parameter
+            url: `/api/contacts/${userId}?page=${page}&search=${query}`, 
             success: function(data) {
-                // Access contacts and pagination data
                 let contacts = data.original.data;
                 let pagination = data.original;
 
@@ -99,7 +94,6 @@
                         </tr>
                     `;
                 });
-                // Insert the rows into the table body
                 $('#contactsTableBody').html(rows);
 
                 // Update pagination controls
@@ -120,57 +114,45 @@
         if (pagination.prev_page_url) {
             paginationHtml += `<button class="btn btn-secondary btn-sm" id="prevPageBtn">Previous</button>`;
         }
-
         // Display current page number
-        paginationHtml += `
-            <span class="btn btn-light btn-sm">${pagination.current_page}</span>
-        `;
+        paginationHtml += `<span class="btn btn-light btn-sm">${pagination.current_page}</span>`;
 
         // Check if next page exists
         if (pagination.next_page_url) {
             paginationHtml += `<button class="btn btn-secondary btn-sm" id="nextPageBtn">Next</button>`;
         }
 
-        // Update the pagination controls
         $('#paginationControls').html(paginationHtml);
 
-        // Bind page change events
         $('#paginationControls button').on('click', function() {
-            // Determine the next or previous page
             if ($(this).attr('id') === 'prevPageBtn') {
                 currentPage = pagination.current_page - 1;
             } else if ($(this).attr('id') === 'nextPageBtn') {
                 currentPage = pagination.current_page + 1;
             }
-
-            // Fetch contacts with the updated page number
             fetchContacts(userId, currentPage, searchQuery);
         });
     }
 
-    // Handle delete button click
+    // delete popup
     $(document).on('click', '.deleteContactBtn', function() {
         var contactId = $(this).data('id');
-        // Store the contact ID in the modal's delete button
         $('#confirmDeleteBtn').data('id', contactId);
-        // Show the modal
         $('#deleteContactModal').modal('show');
     });
 
     $('#confirmDeleteBtn').on('click', function() {
         var contactId = $(this).data('id');
         
-        // Make the API call to delete the contact
+        // delete
         $.ajax({
             type: "DELETE",
             url: `/api/contacts/${contactId}`,
             success: function(response) {
-                // Close the modal
                 $('#deleteContactModal').modal('hide');
-                // Refresh the contact list
-                $('#searchInput').val(''); // Clear the search input field
-                searchQuery = ''; // Reset search query variable
-                fetchContacts(userId, 1, searchQuery); // Fetch contacts with search term
+                $('#searchInput').val('');
+                searchQuery = ''; 
+                fetchContacts(userId, 1, searchQuery);
             },
             error: function(error) {
                 console.log(error);
